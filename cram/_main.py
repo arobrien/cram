@@ -22,7 +22,11 @@ def _which(cmd):
     for p in os.environ['PATH'].split(os.pathsep):
         path = os.path.join(os.fsencode(p), cmd)
         if os.path.isfile(path) and os.access(path, os.X_OK):
-            return os.path.abspath(path)
+            if os.supports_bytes_environ:
+                return os.path.abspath(path)
+            else:
+                # subprocess.Popen requires env to by Dict[str,str] on Windows
+                return os.path.abspath(path).decode()
     return None
 
 def _expandpath(path):
